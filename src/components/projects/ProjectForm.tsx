@@ -2,26 +2,43 @@ import { useState } from 'react';
 import { api } from '~/utils/api';
 
 interface ProjectFormProps {
-  onProjectCreated?: (projectId: string) => void;
+  initialData?: {
+    id: string;
+    name: string;
+    description?: string;
+  };
+  onSubmit: (project: { name: string; description?: string }) => void;
+  onCancel: () => void;
 }
 
-export const ProjectForm: React.FC<ProjectFormProps> = ({ onProjectCreated }) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+export const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onSubmit, onCancel }) => {
+  const [name, setName] = useState(initialData?.name || '');
+  const [description, setDescription] = useState(initialData?.description || '');
   const createProject = api.project.create.useMutation();
+  const updateProject = api.project.update.useMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = await createProject.mutateAsync({
-        name,
-        description,
-      });
-      if (result && onProjectCreated) {
-        onProjectCreated(result.id);
+      if (initialData) {
+        await updateProject.mutateAsync({
+          id: initialData.id,
+          name,
+          description,
+        });
+      } else {
+        await createProject.mutateAsync({
+          name,
+          description,
+        });
       }
+      const projectData = {
+        name,
+        description: description || undefined,
+      };
+      onSubmit(projectData);
     } catch (error) {
-      console.error('Error creating project:', error);
+      console.error('Error saving project:', error);
     }
   };
 
@@ -51,13 +68,22 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ onProjectCreated }) =>
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={createProject.isPending}
-        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-      >
-        Create Project
-      </button>
+      <div className="flex justify-end space-x-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={createProject.isPending}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          {initialData ? 'Update Project' : 'Create Project'}
+        </button>
+      </div>
     </form>
   );
 };

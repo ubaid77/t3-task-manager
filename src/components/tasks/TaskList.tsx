@@ -5,6 +5,7 @@ import {
   Task,
 } from "../../types/task";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TaskListProps {
   tasks: Task[];
@@ -18,6 +19,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   onTaskDelete,
 }) => {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const handleStatusChange = async (
     taskId: string,
@@ -42,6 +44,7 @@ export const TaskList: React.FC<TaskListProps> = ({
         image: taskToUpdate.createdBy.image || "",
       },
     });
+    await queryClient.invalidateQueries({ queryKey: ['task', 'getAll'] });
   };
 
   const handlePriorityChange = async (
@@ -67,6 +70,12 @@ export const TaskList: React.FC<TaskListProps> = ({
         image: taskToUpdate.createdBy.image || "",
       },
     });
+    await queryClient.invalidateQueries({ queryKey: ['task', 'getAll'] });
+  };
+
+  const handleDelete = async (taskId: string) => {
+    await onTaskDelete(taskId);
+    await queryClient.invalidateQueries({ queryKey: ['task', 'getAll'] });
   };
 
   return (

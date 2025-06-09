@@ -19,6 +19,28 @@ const taskInputSchema = z.object({
 const partialTaskInputSchema = taskInputSchema.partial();
 
 export const taskRouter = createTRPCRouter({
+  getByProjectId: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const tasks = await ctx.db.task.findMany({
+        where: {
+          projectId: input.projectId,
+          OR: [
+            { assignedToId: ctx.session.user.id },
+            { createdById: ctx.session.user.id },
+          ],
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          project: true,
+          assignedTo: true,
+          createdBy: true,
+        },
+      });
+      return tasks;
+    }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const tasks = await ctx.db.task.findMany({
       where: {
