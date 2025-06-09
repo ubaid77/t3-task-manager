@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^1.6.0",
+    "@hookform/resolvers": "^5.1.1",
     "@prisma/client": "^5.14.0",
     "@radix-ui/react-slot": "^1.2.3",
     "@t3-oss/env-nextjs": "^0.10.1",
@@ -33,9 +34,10 @@
     "nodemailer": "^6.10.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.57.0",
     "superjson": "^2.2.1",
     "tailwind-merge": "^3.3.0",
-    "zod": "^3.23.3"
+    "zod": "^3.25.56"
   },
   "devDependencies": {
     "@types/eslint": "^8.56.10",

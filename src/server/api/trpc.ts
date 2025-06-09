@@ -14,6 +14,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { User } from "@prisma/client";
 
 import { getServerAuthSession } from "~/server/auth";
 import { db } from "~/server/db";
@@ -26,8 +27,12 @@ import { db } from "~/server/db";
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 
+interface ExtendedSession extends Session {
+  user: User;
+}
+
 interface CreateContextOptions {
-  session: Session | null;
+  session: ExtendedSession | null;
 }
 
 /**
@@ -59,8 +64,14 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
 
+  // If we have a session, extend it with the Prisma User type
+  const extendedSession = session ? {
+    ...session,
+    user: session.user as User,
+  } : null;
+
   return createInnerTRPCContext({
-    session,
+    session: extendedSession as ExtendedSession | null,
   });
 };
 
