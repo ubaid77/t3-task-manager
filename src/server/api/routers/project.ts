@@ -111,7 +111,6 @@ export const projectRouter = createTRPCRouter({
         data: {
           ...input,
           id: undefined,
-          name: undefined,
         },
       });
       return updatedProject;

@@ -25,7 +25,7 @@ export default function Home() {
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: projects } = api.project.getAll.useQuery();
+  const { data: projects, isLoading: isProjectsLoading } = api.project.getAll.useQuery();
   const createProject = api.project.create.useMutation();
   const deleteTask = api.task.delete.useMutation();
   const updateTask = api.task.update.useMutation();
@@ -84,7 +84,10 @@ export default function Home() {
     const createdProject = await createProject.mutateAsync(project);
     setSelectedProjectId(createdProject.id);
     setShowProjectForm(false);
+    // Invalidate project query cache
     await queryClient.invalidateQueries({ queryKey: ['project', 'getAll'] });
+    // Wait for cache to update before redirecting
+    await new Promise(resolve => setTimeout(resolve, 100));
   };
 
   const handleNewTask = async (task: TaskFormData) => {
@@ -124,9 +127,15 @@ export default function Home() {
             )}
 
             <div className="mt-8">
-              <ProjectList
-                projects={projects || []}
-              />
+              {isProjectsLoading ? (
+                <div className="flex justify-center items-center min-h-[200px]">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <ProjectList
+                  projects={projects || []}
+                />
+              )}
             </div>
           </div>
         </div>
