@@ -16,6 +16,7 @@ interface TaskFormModalProps {
   onClose: () => void;
   onTaskCreated: (taskId: string) => void;
   initialTask?: PartialTask;
+  refetchProject: () => void;
 }
 
 export const TaskFormModal: React.FC<TaskFormModalProps> = ({
@@ -23,11 +24,16 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
   show,
   onClose,
   onTaskCreated,
+  refetchProject,
 }) => {
   const [initialData, setInitialData] = useState<PartialTask | undefined>(
     undefined,
   );
-  const createTask = api.task.create.useMutation();
+  const createTask = api.task.create.useMutation({
+    onSuccess: () => {
+      refetchProject();
+    },
+  });
   const queryClient = useQueryClient();
 
   const handleSubmit = async (taskData: TaskFormData) => {
@@ -71,6 +77,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
           onSubmit={handleSubmit}
           onCancel={onClose}
           initialTask={initialData}
+          projectId={projectId}
         />
       </div>
     </div>

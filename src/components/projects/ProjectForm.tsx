@@ -22,12 +22,14 @@ interface ProjectFormProps {
     members: string[];
   }) => void;
   onCancel: () => void;
+  refetchProject: () => void;
 }
 
 export const ProjectForm: React.FC<ProjectFormProps> = ({
   initialData,
   onSubmit,
   onCancel,
+  refetchProject,
 }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -41,7 +43,12 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
   const { data: session, status } = useSession();
   const { data: users } = api.user.getAll.useQuery();
   const createProject = api.project.create.useMutation();
-  const updateProject = api.project.update.useMutation();
+  const updateProject = api.project.update.useMutation({
+    onSuccess: () => {
+      refetchProject();
+      onCancel();
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,16 +73,14 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           ...projectData,
           id: initialData.id,
         });
+        await queryClient.invalidateQueries({
+          queryKey: ["project", "getById", initialData.id],
+        });
       } else {
         const createdProject = await createProject.mutateAsync(projectData);
         // Navigate to the project page after creation
         router.push(`/projects/${createdProject.id}`);
       }
-
-      // Invalidate project query cache
-      await queryClient.invalidateQueries({
-        queryKey: ["project", "getAll"],
-      });
 
       // Close the form
       onCancel();
@@ -201,7 +206,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
         <button
           type="submit"
           disabled={createProject.isPending}
-          className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
+          className={`rounded px-4 py-2 font-bold transition-all duration-200 ${
+            createProject.isPending
+              ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+              : 'bg-blue-500 text-white hover:bg-blue-700'
+          }`}
         >
           {initialData ? "Update Project" : "Create Project"}
         </button>

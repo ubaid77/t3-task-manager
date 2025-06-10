@@ -1,10 +1,10 @@
+import { useState, useEffect } from "react";
 import {
   type PartialTask,
   TaskStatus,
   TaskPriority,
   Task,
 } from "../../types/task";
-import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "~/utils/api";
 
@@ -12,32 +12,26 @@ interface TaskListProps {
   projectId: string;
   onTaskUpdate: (updatedTask: PartialTask) => Promise<void>;
   onTaskDelete: (taskId: string) => Promise<void>;
+  tasks?: Task[];
 }
 
 export const TaskList: React.FC<TaskListProps> = ({
   projectId,
   onTaskUpdate,
   onTaskDelete,
+  tasks,
 }) => {
-  const { data: tasks, isLoading } = api.task.getByProjectId.useQuery({
-    projectId,
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-4">
-        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [taskList, setTaskList] = useState<Task[]>(tasks || []);
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    setTaskList(tasks || []);
+  }, [tasks]);
   const handleStatusChange = async (
     taskId: string,
     newStatus: Task["status"],
   ) => {
-    const taskToUpdate = tasks?.find((t) => t.id === taskId);
+    const taskToUpdate = taskList.find((t) => t.id === taskId);
     if (!taskToUpdate) return;
 
     await onTaskUpdate({
@@ -56,14 +50,14 @@ export const TaskList: React.FC<TaskListProps> = ({
         image: taskToUpdate.createdBy.image || "",
       },
     });
-    await queryClient.invalidateQueries({ queryKey: ['task', 'getAll'] });
+    await queryClient.invalidateQueries({ queryKey: ["task", "getAll"] });
   };
 
   const handlePriorityChange = async (
     taskId: string,
     newPriority: Task["priority"],
   ) => {
-    const taskToUpdate = tasks?.find((t) => t.id === taskId);
+    const taskToUpdate = taskList.find((t) => t.id === taskId);
     if (!taskToUpdate) return;
 
     await onTaskUpdate({
@@ -82,19 +76,19 @@ export const TaskList: React.FC<TaskListProps> = ({
         image: taskToUpdate.createdBy.image || "",
       },
     });
-    await queryClient.invalidateQueries({ queryKey: ['task', 'getAll'] });
+    await queryClient.invalidateQueries({ queryKey: ["task", "getAll"] });
   };
 
   const handleDelete = async (taskId: string) => {
     await onTaskDelete(taskId);
-    await queryClient.invalidateQueries({ queryKey: ['task', 'getAll'] });
+    await queryClient.invalidateQueries({ queryKey: ["task", "getAll"] });
   };
 
   return (
     <div className="space-y-4">
-      {tasks?.map((task) => (
+      {taskList.map((task) => (
         <div key={task.id} className="rounded-lg border p-4">
-          <div className="flex justify-between items-start">
+          <div className="flex items-start justify-between">
             <div>
               <h3 className="text-lg font-semibold">{task.title}</h3>
               <p className="text-gray-600">{task.description}</p>
@@ -123,6 +117,11 @@ export const TaskList: React.FC<TaskListProps> = ({
                 >
                   {task.status}
                 </span>
+                {task.assignedTo && (
+                  <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-800">
+                    Assigned to: {task.assignedTo.email}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex items-center space-x-4">

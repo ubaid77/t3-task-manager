@@ -28,13 +28,28 @@ export default function ProjectDetails({
   const projectId = router.query.projectId as string;
   const { data: project, isLoading: isProjectLoading } =
     api.project.getById.useQuery({ id: projectId });
-  const { data: tasks, isLoading: isTasksLoading } =
-    api.task.getByProjectId.useQuery({
-      projectId,
-    });
-  const createTask = api.task.create.useMutation();
-  const updateTask = api.task.update.useMutation();
-  const deleteTask = api.task.delete.useMutation();
+  const {
+    data: tasks,
+    isLoading: isTasksLoading,
+    refetch: refetchProjectTasks,
+  } = api.task.getByProjectId.useQuery({
+    projectId,
+  });
+  const createTask = api.task.create.useMutation({
+    onSuccess: () => {
+      refetchProjectTasks();
+    },
+  });
+  const updateTask = api.task.update.useMutation({
+    onSuccess: () => {
+      refetchProjectTasks();
+    },
+  });
+  const deleteTask = api.task.delete.useMutation({
+    onSuccess: () => {
+      refetchProjectTasks();
+    },
+  });
 
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showProjectForm, setShowProjectForm] = useState(false);
@@ -129,6 +144,7 @@ export default function ProjectDetails({
                 show={showTaskForm}
                 onClose={() => setShowTaskForm(false)}
                 onTaskCreated={handleTaskCreated}
+                refetchProject={refetchProjectTasks}
               />
 
               {!showProjectForm ? (
@@ -178,6 +194,7 @@ export default function ProjectDetails({
                   }}
                   onSubmit={handleProjectUpdated}
                   onCancel={() => setShowProjectForm(false)}
+                  refetchProject={refetchProjectTasks}
                 />
               )}
 
@@ -233,6 +250,7 @@ export default function ProjectDetails({
                       queryKey: ["task", "getByProjectId"],
                     });
                   }}
+                  tasks={tasks}
                 />
               )}
             </div>

@@ -25,15 +25,29 @@ export default function Home() {
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: projects, isLoading: isProjectsLoading } = api.project.getAll.useQuery();
+  const {
+    data: projects,
+    isLoading: isProjectsLoading,
+    refetch: refetchProjects,
+  } = api.project.getAll.useQuery();
+  const { data: tasks, refetch: refetchTasks } = api.task.getAll.useQuery();
   const createProject = api.project.create.useMutation();
   const deleteTask = api.task.delete.useMutation();
-  const updateTask = api.task.update.useMutation();
-  const createTask = api.task.create.useMutation();
-  const { data: tasks } = api.task.getAll.useQuery();
+  const updateTask = api.task.update.useMutation({
+    onSuccess: () => {
+      refetchTasks();
+    },
+  });
+  const createTask = api.task.create.useMutation({
+    onSuccess: () => {
+      refetchTasks();
+    },
+  });
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     // Only redirect if session is fully loaded and is null
@@ -48,7 +62,7 @@ export default function Home() {
         <Navbar />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
+            <div className="mx-auto h-32 w-32 animate-spin rounded-full border-b-2 border-blue-500"></div>
           </div>
         </div>
       </div>
@@ -66,33 +80,39 @@ export default function Home() {
         id: task.id,
         title: task.title,
         description: task.description || null,
-        status: task.status || 'TODO',
-        priority: task.priority || 'NORMAL',
+        status: task.status || "TODO",
+        priority: task.priority || "NORMAL",
         dueDate: task.dueDate || null,
         projectId: task.projectId,
         assignedToId: task.assignedToId || null,
         createdById: task.createdById,
       };
       await updateTask.mutateAsync(updatedTask);
-      await queryClient.invalidateQueries({ queryKey: ['task', 'getAll'] });
+      await queryClient.invalidateQueries({ queryKey: ["task", "getAll"] });
     } catch (error) {
       console.error("Error updating task:", error);
     }
   };
 
-  const handleProjectCreated = async (project: { id: string; name: string; description: string | null; ownerId: string; members: string[] }) => {
+  const handleProjectCreated = async (project: {
+    id: string;
+    name: string;
+    description: string | null;
+    ownerId: string;
+    members: string[];
+  }) => {
     const createdProject = await createProject.mutateAsync({
       name: project.name,
       description: project.description,
       ownerId: project.ownerId,
-      members: project.members
+      members: project.members,
     });
     setSelectedProjectId(createdProject.id);
     setShowProjectForm(false);
     // Invalidate project query cache
-    await queryClient.invalidateQueries({ queryKey: ['project', 'getAll'] });
+    await queryClient.invalidateQueries({ queryKey: ["project", "getAll"] });
     // Wait for cache to update before redirecting
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   };
 
   const handleNewTask = async (task: TaskFormData) => {
@@ -104,49 +124,41 @@ export default function Home() {
       projectId: selectedProjectId,
       createdById: session?.user?.id || "",
     });
-    await queryClient.invalidateQueries({ queryKey: ['task', 'getAll'] });
+    await queryClient.invalidateQueries({ queryKey: ["task", "getAll"] });
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
-      
+
       <main className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow">
+        <div className="rounded-lg bg-white shadow">
           <div className="p-6">
-            <div className="flex justify-between items-center mb-8">
+            <div className="mb-8 flex items-center justify-between">
               <h1 className="text-3xl font-bold">Projects</h1>
               <button
                 onClick={() => setShowProjectForm(true)}
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                className="rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700"
               >
                 New Project
               </button>
             </div>
 
             {showProjectForm && (
-               <ProjectForm
-                 initialData={{
-                   id: "",
-                   name: "",
-                   description: null,
-                   ownerId: session?.user?.id || "",
-                   members: []
-                 }}
-                 onSubmit={handleProjectCreated}
-                 onCancel={() => setShowProjectForm(false)}
-               />
+              <ProjectForm
+                onSubmit={handleProjectCreated}
+                onCancel={() => setShowProjectForm(false)}
+                refetchProject={refetchProjects}
+              />
             )}
 
             <div className="mt-8">
               {isProjectsLoading ? (
-                <div className="flex justify-center items-center min-h-[200px]">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <div className="flex min-h-[200px] items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
                 </div>
               ) : (
-                <ProjectList
-                  projects={projects || []}
-                />
+                <ProjectList projects={projects || []} />
               )}
             </div>
           </div>
