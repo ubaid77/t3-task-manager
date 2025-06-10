@@ -17,21 +17,6 @@ import { db } from "~/server/db";
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
-declare module "next-auth" {
-  interface Session extends DefaultSession {
-    user: DefaultSession["user"] & {
-      id: string;
-      // ...other properties
-      // role: UserRole;
-    };
-  }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
-}
-
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
  *
@@ -39,26 +24,30 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session: ({ session, user }: { session: DefaultSession; user: any }) => {
+      const sessionUser = session.user || {};
+      return {
+        ...session,
+        user: {
+          ...sessionUser,
+          id: user.id,
+          emailVerified: user.emailVerified || null,
+        },
+      };
+    },
   },
   adapter: PrismaAdapter(db) as Adapter,
   providers: [
     EmailProvider({
       server: {
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || "587"),
+        host: env.SMTP_HOST,
+        port: env.SMTP_PORT || "587",
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
+          user: env.SMTP_USER,
+          pass: env.SMTP_PASSWORD,
         },
       },
-      from: process.env.SMTP_FROM,
+      from: env.SMTP_FROM,
     }),
   ],
 };
