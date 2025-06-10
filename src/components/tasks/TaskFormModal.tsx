@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { api } from "~/utils/api";
 import { TaskForm } from "./TaskForm";
-import { type Task, type PartialTask, TaskStatus, TaskPriority, type TaskFormData } from "~/types/task";
+import {
+  type Task,
+  type PartialTask,
+  TaskStatus,
+  TaskPriority,
+  type TaskFormData,
+} from "~/types/task";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TaskFormModalProps {
   projectId: string;
@@ -17,13 +24,19 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
   onClose,
   onTaskCreated,
 }) => {
-  const [initialData, setInitialData] = useState<PartialTask | undefined>(undefined);
+  const [initialData, setInitialData] = useState<PartialTask | undefined>(
+    undefined,
+  );
   const createTask = api.task.create.useMutation();
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (taskData: TaskFormData) => {
     const createdTask = await createTask.mutateAsync({
       ...taskData,
       projectId,
+    });
+    await queryClient.invalidateQueries({
+      queryKey: ["task", "getByProjectId", projectId],
     });
     onTaskCreated(createdTask.id);
   };
@@ -33,7 +46,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold">Create Task</h2>
           <button
             onClick={onClose}

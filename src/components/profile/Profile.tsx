@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
@@ -7,6 +7,7 @@ import { z } from "zod";
 import Link from "next/link";
 import { User } from "@prisma/client";
 import { Session } from "next-auth";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProfileProps {
   projectId: string;
@@ -21,21 +22,41 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export function Profile() {
   const { data: session, status } = useSession();
-  const { data: profile, isLoading } = api.user.getProfile.useQuery();
-  const updateProfile = api.user.updateProfile.useMutation();
+  const {
+    data: profile,
+    isLoading,
+    refetch: refetchProfile,
+  } = api.user.getProfile.useQuery();
+  const updateProfile = api.user.updateProfile.useMutation({
+    onSuccess: async () => {
+      await refetchProfile();
+      setShowEditForm(false);
+    },
+  });
+  const queryClient = useQueryClient();
   const [showEditForm, setShowEditForm] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: session?.user?.name || "",
-      email: session?.user?.email || "",
+      name: "",
+      email: "",
     },
   });
+
+  useEffect(() => {
+    if (profile) {
+      reset({
+        name: profile.name ?? "",
+        email: profile.email ?? "",
+      });
+    }
+  }, [profile, reset]);
 
   // Handle session status
   if (status === "loading") {
@@ -107,10 +128,10 @@ export function Profile() {
               </label>
               <input
                 {...register("name")}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-50 sm:text-sm"
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm font-medium text-red-600">
                   {errors.name.message}
                 </p>
               )}
@@ -122,10 +143,10 @@ export function Profile() {
               </label>
               <input
                 {...register("email")}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-50 sm:text-sm"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm font-medium text-red-600">
                   {errors.email.message}
                 </p>
               )}

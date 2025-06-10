@@ -9,10 +9,10 @@ export const Navbar: React.FC = () => {
 
   return (
     <nav className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 justify-between">
           <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
+            <div className="flex flex-shrink-0 items-center">
               <Link href="/" className="text-xl font-bold text-gray-800">
                 EasySLR
               </Link>
@@ -22,13 +22,16 @@ export const Navbar: React.FC = () => {
             <Link href="/" className="text-gray-700 hover:text-gray-900">
               Home
             </Link>
-            <Link href="/projects" className="text-gray-700 hover:text-gray-900">
+            {/* <Link
+              href="/projects"
+              className="text-gray-700 hover:text-gray-900"
+            >
               Projects
-            </Link>
+            </Link> */}
             <Link href="/profile" className="text-gray-700 hover:text-gray-900">
               Profile
             </Link>
-            {session?.user && (
+            {/* {session?.user && (
               <div className="ml-3 relative">
                 <div>
                   <button
@@ -45,7 +48,7 @@ export const Navbar: React.FC = () => {
                   </button>
                 </div>
               </div>
-            )}
+            )} */}
             <SignOutButton />
           </div>
         </div>

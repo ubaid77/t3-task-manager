@@ -6,18 +6,30 @@ import {
 } from "../../types/task";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { api } from "~/utils/api";
 
 interface TaskListProps {
-  tasks: Task[];
+  projectId: string;
   onTaskUpdate: (updatedTask: PartialTask) => Promise<void>;
   onTaskDelete: (taskId: string) => Promise<void>;
 }
 
 export const TaskList: React.FC<TaskListProps> = ({
-  tasks,
+  projectId,
   onTaskUpdate,
   onTaskDelete,
 }) => {
+  const { data: tasks, isLoading } = api.task.getByProjectId.useQuery({
+    projectId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-4">
+        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -25,7 +37,7 @@ export const TaskList: React.FC<TaskListProps> = ({
     taskId: string,
     newStatus: Task["status"],
   ) => {
-    const taskToUpdate = tasks.find((t) => t.id === taskId);
+    const taskToUpdate = tasks?.find((t) => t.id === taskId);
     if (!taskToUpdate) return;
 
     await onTaskUpdate({
@@ -51,7 +63,7 @@ export const TaskList: React.FC<TaskListProps> = ({
     taskId: string,
     newPriority: Task["priority"],
   ) => {
-    const taskToUpdate = tasks.find((t) => t.id === taskId);
+    const taskToUpdate = tasks?.find((t) => t.id === taskId);
     if (!taskToUpdate) return;
 
     await onTaskUpdate({
@@ -80,9 +92,9 @@ export const TaskList: React.FC<TaskListProps> = ({
 
   return (
     <div className="space-y-4">
-      {tasks.map((task) => (
-        <div key={task.id} className="rounded-lg bg-white p-4 shadow">
-          <div className="flex items-start justify-between">
+      {tasks?.map((task) => (
+        <div key={task.id} className="rounded-lg border p-4">
+          <div className="flex justify-between items-start">
             <div>
               <h3 className="text-lg font-semibold">{task.title}</h3>
               <p className="text-gray-600">{task.description}</p>

@@ -35,7 +35,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
                 <p className="mt-1 text-gray-600">{project.description}</p>
               )}
               <p className="mt-2 text-sm text-gray-500">
-                Created by {project.owner.email || "Unknown"}
+                Created by{" "}
+                {project.owner.name || project.owner.email || "Unknown"}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {project.members.map((member) => (

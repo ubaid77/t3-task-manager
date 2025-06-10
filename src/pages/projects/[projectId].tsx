@@ -151,7 +151,9 @@ export default function ProjectDetails({
                           Created By
                         </h4>
                         <p className="text-gray-600">
-                          {project.owner.name || "Unknown"}
+                          {project.owner.name ||
+                            project.owner.email ||
+                            "Unknown"}
                         </p>
                       </div>
                       <div>
@@ -218,7 +220,7 @@ export default function ProjectDetails({
                 </div>
               ) : (
                 <TaskList
-                  tasks={tasks || []}
+                  projectId={projectId}
                   onTaskUpdate={async (updatedTask) => {
                     await updateTask.mutateAsync(updatedTask);
                     await queryClient.invalidateQueries({

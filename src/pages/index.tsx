@@ -80,8 +80,13 @@ export default function Home() {
     }
   };
 
-  const handleProjectCreated = async (project: { name: string; description?: string }) => {
-    const createdProject = await createProject.mutateAsync(project);
+  const handleProjectCreated = async (project: { id: string; name: string; description: string | null; ownerId: string; members: string[] }) => {
+    const createdProject = await createProject.mutateAsync({
+      name: project.name,
+      description: project.description,
+      ownerId: project.ownerId,
+      members: project.members
+    });
     setSelectedProjectId(createdProject.id);
     setShowProjectForm(false);
     // Invalidate project query cache
@@ -97,7 +102,7 @@ export default function Home() {
     await createTask.mutateAsync({
       ...task,
       projectId: selectedProjectId,
-      createdById: task.createdById,
+      createdById: session?.user?.id || "",
     });
     await queryClient.invalidateQueries({ queryKey: ['task', 'getAll'] });
   };
@@ -121,6 +126,13 @@ export default function Home() {
 
             {showProjectForm && (
                <ProjectForm
+                 initialData={{
+                   id: "",
+                   name: "",
+                   description: null,
+                   ownerId: session?.user?.id || "",
+                   members: []
+                 }}
                  onSubmit={handleProjectCreated}
                  onCancel={() => setShowProjectForm(false)}
                />
