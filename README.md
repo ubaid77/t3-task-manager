@@ -2,18 +2,125 @@
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
 
-## What's next? How do I make an app with this?
+## Task Manager
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+A modern task management application built with Next.js, TypeScript, and Prisma.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Features
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- Task creation and management
+- User authentication
+- Responsive design
+- Real-time updates
+
+## Tech Stack
+
+- Next.js 13+ with App Router
+- TypeScript
+- Prisma ORM
+- NextAuth.js
+- Tailwind CSS
+- ESLint & Prettier
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- PostgreSQL (for database)
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Copy the example environment file and fill in your values:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Run database migrations:
+   ```bash
+   npx prisma migrate dev
+   ```
+
+5. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Environment Variables
+
+Create a `.env` file in the root directory and add the following variables:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/database_name"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
+```
+
+### Database
+
+The project uses PostgreSQL as its database. You can start the database using:
+
+```bash
+./start-database.sh
+```
+
+### Running Tests
+
+```bash
+npm run test
+# or
+yarn test
+```
+
+### Formatting & Linting
+
+```bash
+# Format code
+npm run format
+# or
+yarn format
+
+# Lint code
+npm run lint
+# or
+yarn lint
+```
+
+## Project Structure
+
+```
+src/
+├── app/             # Next.js app directory
+├── components/      # Reusable React components
+├── lib/            # Utility functions and shared logic
+├── server/         # Server-side code and API routes
+└── types/          # TypeScript type definitions
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Learn More
 
