@@ -23,25 +23,6 @@ export function Profile() {
   const { data: session, status } = useSession();
   const { data: profile, isLoading } = api.user.getProfile.useQuery();
   const updateProfile = api.user.updateProfile.useMutation();
-
-  // Handle session status
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
-
-  if (status === "unauthenticated") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-4">Please sign in to view your profile</h2>
-          <Link href="/api/auth/signin" className="text-blue-500 hover:text-blue-700">
-            Sign in
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   const [showEditForm, setShowEditForm] = useState(false);
 
   const {
@@ -51,10 +32,33 @@ export function Profile() {
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: profile?.name || "",
-      email: profile?.email || "",
+      name: session?.user?.name || "",
+      email: session?.user?.email || "",
     },
   });
+
+  // Handle session status
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h2 className="mb-4 text-2xl font-semibold">
+            Please sign in to view your profile
+          </h2>
+          <Link
+            href="/api/auth/signin"
+            className="text-blue-500 hover:text-blue-700"
+          >
+            Sign in
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
@@ -69,10 +73,10 @@ export function Profile() {
 
   if (!session) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex h-screen items-center justify-center">
         <Link
           href="/api/auth/signin"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
         >
           Sign In
         </Link>
@@ -84,12 +88,12 @@ export function Profile() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-8">
+      <div className="rounded-lg bg-white p-6 shadow">
+        <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Profile Settings</h1>
           <button
             onClick={() => setShowEditForm(!showEditForm)}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
           >
             {showEditForm ? "Cancel" : "Edit Profile"}
           </button>
@@ -106,7 +110,9 @@ export function Profile() {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.name.message}
+                </p>
               )}
             </div>
 
@@ -119,7 +125,9 @@ export function Profile() {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
@@ -127,13 +135,13 @@ export function Profile() {
               <button
                 type="button"
                 onClick={() => setShowEditForm(false)}
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                className="rounded bg-gray-500 px-4 py-2 font-bold text-white hover:bg-gray-700"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
               >
                 Save Changes
               </button>
@@ -159,4 +167,4 @@ export function Profile() {
       </div>
     </div>
   );
-};
+}

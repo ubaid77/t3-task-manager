@@ -1,17 +1,22 @@
-import { createTRPCRouter, protectedProcedure, TRPCError } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { TRPCError } from "@trpc/server";
 import { db } from "~/server/db";
 import { z } from "zod";
 
 // Define input schemas for project operations
 const projectInputSchema = z.object({
+  id: z.string().optional(),
   name: z.string().min(1),
-  description: z.string().optional(),
+  description: z.string().nullable(),
+  ownerId: z.string(),
+  members: z.array(z.string()),
 });
 
 const partialProjectInputSchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string().optional(),
+  description: z.string().nullable(),
+  members: z.array(z.string()).optional(),
 });
 
 export const projectRouter = createTRPCRouter({
@@ -72,12 +77,13 @@ export const projectRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const project = await ctx.db.project.create({
         data: {
-          ...input,
+          name: input.name,
+          description: input.description,
           owner: {
-            connect: { id: ctx.session.user.id },
+            connect: { id: input.ownerId },
           },
           members: {
-            connect: { id: ctx.session.user.id },
+            connect: input.members.map(id => ({ id })),
           },
         },
       });
@@ -109,8 +115,11 @@ export const projectRouter = createTRPCRouter({
       const updatedProject = await ctx.db.project.update({
         where: { id: input.id },
         data: {
-          ...input,
-          id: undefined,
+          name: input.name,
+          description: input.description,
+          members: {
+            set: input.members?.map(id => ({ id })) || [],
+          },
         },
       });
       return updatedProject;

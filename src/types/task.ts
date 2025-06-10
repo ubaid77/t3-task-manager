@@ -11,6 +11,17 @@ export type Task = Prisma.TaskGetPayload<{
   }
 }>;
 
+export type TaskFormData = {
+  title: string;
+  description?: string | null;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate?: Date | null;
+  projectId: string;
+  assignedToId?: string | null;
+  createdById: string;
+};
+
 export type PartialTask = {
   id: string;
   title: string;

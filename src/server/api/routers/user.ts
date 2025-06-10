@@ -52,6 +52,16 @@ export const userRouter = createTRPCRouter({
     return updatedUser;
   }),
 
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.db.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+  }),
+
   getProjectSettings: isAuthed.input(z.object({ projectId: z.string() })).query(async ({ ctx, input }) => {
     const session = ctx.session as ExtendedSession;
     const project = await ctx.db.project.findUnique({

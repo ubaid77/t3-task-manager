@@ -4,18 +4,26 @@ import { api } from "~/utils/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { TaskList } from "~/components/tasks/TaskList";
 import { TaskForm } from "~/components/tasks/TaskForm";
+import { TaskFormModal } from "~/components/tasks/TaskFormModal";
 import { ProjectForm } from "~/components/projects/ProjectForm";
 import { ProjectSettings } from "~/components/projects/ProjectSettings";
 import { Navbar } from "~/components/layout/Navbar";
 import { type Task, TaskStatus, TaskPriority } from "~/types/task";
 
 interface ProjectDetailsProps {
-  params: {
-    projectId: string;
-  };
+  projectId: string;
+  onProjectUpdated?: (project: {
+    id: string;
+    name: string;
+    description: string | null;
+    ownerId: string;
+    members: string[];
+  }) => void;
 }
 
-export default function ProjectDetails({ params }: ProjectDetailsProps) {
+export default function ProjectDetails({
+  onProjectUpdated,
+}: ProjectDetailsProps) {
   const router = useRouter();
   const projectId = router.query.projectId as string;
   const { data: project, isLoading: isProjectLoading } =
@@ -41,8 +49,17 @@ export default function ProjectDetails({ params }: ProjectDetailsProps) {
     });
   };
 
-  const handleProjectUpdated = async () => {
+  const handleProjectUpdated = async (project: {
+    id: string;
+    name: string;
+    description: string | null;
+    ownerId: string;
+    members: string[];
+  }) => {
     setShowProjectForm(false);
+    if (onProjectUpdated) {
+      onProjectUpdated(project);
+    }
     // Invalidate both project list and specific project details
     await queryClient.invalidateQueries({ queryKey: ["project", "getAll"] });
     await queryClient.invalidateQueries({ queryKey: ["project", "getById"] });
@@ -89,7 +106,8 @@ export default function ProjectDetails({ params }: ProjectDetailsProps) {
           {/* Project Details Section */}
           <div className="col-span-1 rounded-lg bg-white shadow">
             <div className="p-6">
-              <div className="mb-6">
+              <div className="mb-6 flex items-center justify-between">
+                <h1 className="text-2xl font-bold">{project.name}</h1>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setShowProjectForm(true)}
@@ -104,22 +122,14 @@ export default function ProjectDetails({ params }: ProjectDetailsProps) {
                     Settings
                   </button>
                 </div>
-                <h1 className="text-2xl font-bold">{project.name}</h1>
               </div>
 
-              {showTaskForm && (
-                <TaskForm
-                  onSubmit={async (task) => {
-                    await createTask.mutateAsync({
-                      ...task,
-                      projectId,
-                      createdById: task.createdById,
-                    });
-                    await handleTaskCreated("");
-                  }}
-                  onCancel={() => setShowTaskForm(false)}
-                />
-              )}
+              <TaskFormModal
+                projectId={projectId}
+                show={showTaskForm}
+                onClose={() => setShowTaskForm(false)}
+                onTaskCreated={handleTaskCreated}
+              />
 
               {!showProjectForm ? (
                 <div className="space-y-6">
@@ -160,7 +170,9 @@ export default function ProjectDetails({ params }: ProjectDetailsProps) {
                   initialData={{
                     id: project.id,
                     name: project.name,
-                    description: project.description || undefined,
+                    description: project.description || null,
+                    ownerId: project.ownerId,
+                    members: project.members.map((member) => member.id),
                   }}
                   onSubmit={handleProjectUpdated}
                   onCancel={() => setShowProjectForm(false)}
@@ -182,9 +194,22 @@ export default function ProjectDetails({ params }: ProjectDetailsProps) {
                 <h2 className="text-xl font-bold">Tasks</h2>
                 <button
                   onClick={() => setShowTaskForm(true)}
-                  className="rounded bg-blue-500 px-3 py-2 font-medium text-white hover:bg-blue-600"
+                  className="flex items-center rounded bg-blue-500 px-3 py-2 font-medium text-white hover:bg-blue-600"
                 >
-                  New Task
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  <span className="ml-2">New Task</span>
                 </button>
               </div>
               {isTasksLoading ? (
