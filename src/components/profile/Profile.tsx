@@ -5,13 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { User } from "@prisma/client";
-import { Session } from "next-auth";
-import { useQueryClient } from "@tanstack/react-query";
-
-interface ProfileProps {
-  projectId: string;
-}
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").optional(),
@@ -33,7 +26,7 @@ export function Profile() {
       setShowEditForm(false);
     },
   });
-  const queryClient = useQueryClient();
+
   const [showEditForm, setShowEditForm] = useState(false);
 
   const {

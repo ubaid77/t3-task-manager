@@ -37,17 +37,17 @@ export default function ProjectDetails({
   });
   const createTask = api.task.create.useMutation({
     onSuccess: () => {
-      refetchProjectTasks();
+      void refetchProjectTasks();
     },
   });
   const updateTask = api.task.update.useMutation({
     onSuccess: () => {
-      refetchProjectTasks();
+      void refetchProjectTasks();
     },
   });
   const deleteTask = api.task.delete.useMutation({
     onSuccess: () => {
-      refetchProjectTasks();
+      void refetchProjectTasks();
     },
   });
 

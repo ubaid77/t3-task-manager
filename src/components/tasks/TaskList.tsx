@@ -132,9 +132,7 @@ export const TaskList: React.FC<TaskListProps> = ({
               )}
               <select
                 value={task.status}
-                onChange={(e) =>
-                  handleStatusChange(task.id, e.target.value as Task["status"])
-                }
+                onChange={(e) => handleStatusChange(task.id, e.target.value)}
                 className="rounded border px-2 py-1"
               >
                 <option value="TODO">TODO</option>
@@ -143,12 +141,7 @@ export const TaskList: React.FC<TaskListProps> = ({
               </select>
               <select
                 value={task.priority}
-                onChange={(e) =>
-                  handlePriorityChange(
-                    task.id,
-                    e.target.value as Task["priority"],
-                  )
-                }
+                onChange={(e) => handlePriorityChange(task.id, e.target.value)}
                 className="rounded border px-2 py-1"
               >
                 <option value="LOW">LOW</option>

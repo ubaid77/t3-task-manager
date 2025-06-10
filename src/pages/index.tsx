@@ -35,12 +35,12 @@ export default function Home() {
   const deleteTask = api.task.delete.useMutation();
   const updateTask = api.task.update.useMutation({
     onSuccess: () => {
-      refetchTasks();
+      void refetchTasks();
     },
   });
   const createTask = api.task.create.useMutation({
     onSuccess: () => {
-      refetchTasks();
+      void refetchTasks();
     },
   });
   const [showProjectForm, setShowProjectForm] = useState(false);
@@ -73,26 +73,6 @@ export default function Home() {
     router.push("/api/auth/signin");
     return null;
   }
-
-  const handleTaskUpdate = async (task: PartialTask) => {
-    try {
-      const updatedTask = {
-        id: task.id,
-        title: task.title,
-        description: task.description || null,
-        status: task.status || "TODO",
-        priority: task.priority || "NORMAL",
-        dueDate: task.dueDate || null,
-        projectId: task.projectId,
-        assignedToId: task.assignedToId || null,
-        createdById: task.createdById,
-      };
-      await updateTask.mutateAsync(updatedTask);
-      await queryClient.invalidateQueries({ queryKey: ["task", "getAll"] });
-    } catch (error) {
-      console.error("Error updating task:", error);
-    }
-  };
 
   const handleProjectCreated = async (project: {
     id: string;

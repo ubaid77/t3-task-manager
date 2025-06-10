@@ -26,7 +26,7 @@ const isAuthed = publicProcedure.use(({ ctx, next }) => {
 
 export const userRouter = createTRPCRouter({
   getProfile: isAuthed.query(({ ctx }) => {
-    const session = ctx.session as ExtendedSession;
+    const session = ctx.session;
     const profile = {
       id: session.user.id,
       name: session.user.name,
@@ -36,21 +36,25 @@ export const userRouter = createTRPCRouter({
     return profile;
   }),
 
-  updateProfile: isAuthed.input(z.object({
-    name: z.string().optional(),
-    email: z.string().email().optional(),
-  })).mutation(async ({ ctx, input }) => {
-    const session = ctx.session as ExtendedSession;
-    const updatedUser = await ctx.db.user.update({
-      where: { id: session.user.id },
-      data: {
-        name: input.name,
-        email: input.email,
-      },
-    });
+  updateProfile: isAuthed
+    .input(
+      z.object({
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const session = ctx.session;
+      const updatedUser = await ctx.db.user.update({
+        where: { id: session.user.id },
+        data: {
+          name: input.name,
+          email: input.email,
+        },
+      });
 
-    return updatedUser;
-  }),
+      return updatedUser;
+    }),
 
   getAll: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.user.findMany({
@@ -62,46 +66,52 @@ export const userRouter = createTRPCRouter({
     });
   }),
 
-  getProjectSettings: isAuthed.input(z.object({ projectId: z.string() })).query(async ({ ctx, input }) => {
-    const session = ctx.session as ExtendedSession;
-    const project = await ctx.db.project.findUnique({
-      where: { id: input.projectId },
-      include: {
-        members: true,
-      },
-    });
+  getProjectSettings: isAuthed
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const session = ctx.session;
+      const project = await ctx.db.project.findUnique({
+        where: { id: input.projectId },
+        include: {
+          members: true,
+        },
+      });
 
-    if (!project) {
-      throw new Error("Project not found");
-    }
+      if (!project) {
+        throw new Error("Project not found");
+      }
 
-    return {
-      name: project.name,
-      description: project.description,
-      members: project.members,
-    };
-  }),
+      return {
+        name: project.name,
+        description: project.description,
+        members: project.members,
+      };
+    }),
 
-  updateProjectSettings: isAuthed.input(z.object({
-    projectId: z.string(),
-    name: z.string().optional(),
-    description: z.string().optional(),
-    members: z.array(z.string()).optional(),
-  })).mutation(async ({ ctx, input }) => {
-    const session = ctx.session as ExtendedSession;
-    const project = await ctx.db.project.update({
-      where: { id: input.projectId },
-      data: {
-        name: input.name,
-        description: input.description,
-        members: input.members
-          ? {
-              set: input.members.map((id) => ({ id })),
-            }
-          : undefined,
-      },
-    });
+  updateProjectSettings: isAuthed
+    .input(
+      z.object({
+        projectId: z.string(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        members: z.array(z.string()).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const session = ctx.session;
+      const project = await ctx.db.project.update({
+        where: { id: input.projectId },
+        data: {
+          name: input.name,
+          description: input.description,
+          members: input.members
+            ? {
+                set: input.members.map((id) => ({ id })),
+              }
+            : undefined,
+        },
+      });
 
-    return project;
-  }),
+      return project;
+    }),
 });

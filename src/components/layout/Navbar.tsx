@@ -1,12 +1,7 @@
-import { signIn, signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { SignOutButton } from "~/components/auth/SignOutButton";
 import Link from "next/link";
 
 export const Navbar: React.FC = () => {
-  const { data: session } = useSession();
-  const router = useRouter();
-
   return (
     <nav className="bg-white shadow">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

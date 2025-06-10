@@ -10,6 +10,7 @@ import EmailProvider from "next-auth/providers/email";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
+import { User } from "~/types/auth";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`

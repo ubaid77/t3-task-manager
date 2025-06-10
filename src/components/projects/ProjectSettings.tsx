@@ -31,7 +31,11 @@ const projectSettingsSchema = z.object({
 
 type ProjectSettingsFormData = z.infer<typeof projectSettingsSchema>;
 
-export function ProjectSettings({ projectId, show, onClose }: ProjectSettingsProps) {
+export function ProjectSettings({
+  projectId,
+  show,
+  onClose,
+}: ProjectSettingsProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { data: projectSettings } = api.user.getProjectSettings.useQuery({
@@ -90,16 +94,16 @@ export function ProjectSettings({ projectId, show, onClose }: ProjectSettingsPro
   }
 
   if (!projectId) {
-    router.push("/");
+    void router.push("/");
     return null;
   }
 
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl relative">
-        <div className="flex justify-between items-center mb-8">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="relative w-full max-w-2xl rounded-lg bg-white p-6">
+        <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Project Settings</h1>
           <button
             onClick={onClose}

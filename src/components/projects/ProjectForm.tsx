@@ -3,7 +3,6 @@ import { api } from "~/utils/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Listbox } from "@headlessui/react";
-import { Fragment } from "react";
 import { useSession } from "next-auth/react";
 
 interface ProjectFormProps {
@@ -27,7 +26,6 @@ interface ProjectFormProps {
 
 export const ProjectForm: React.FC<ProjectFormProps> = ({
   initialData,
-  onSubmit,
   onCancel,
   refetchProject,
 }) => {
@@ -87,18 +85,6 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     } catch (error) {
       console.error("Error saving project:", error);
     }
-  };
-
-  const handleProjectUpdated = (project: {
-    name: string;
-    description: string | null;
-    ownerId: string;
-    members: string[];
-  }) => {
-    onSubmit({
-      ...project,
-      id: initialData?.id || "",
-    });
   };
 
   if (status !== "authenticated") {
@@ -208,8 +194,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           disabled={createProject.isPending}
           className={`rounded px-4 py-2 font-bold transition-all duration-200 ${
             createProject.isPending
-              ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-700'
+              ? "cursor-not-allowed bg-gray-400 text-gray-200"
+              : "bg-blue-500 text-white hover:bg-blue-700"
           }`}
         >
           {initialData ? "Update Project" : "Create Project"}
